@@ -25,12 +25,15 @@ VISU_INDEX = 1
 
 class EventSlicer:
     def __init__(self, h5f: h5py.File):
+        
+        #関数の引数の()の中の:は右側で左側の引数の型を指定している
         self.h5f = h5f
 
         self.events = dict()
         for dset_str in ['p', 'x', 'y', 't']:
             self.events[dset_str] = self.h5f['events/{}'.format(dset_str)]
-
+            
+        #tはタイムスタンプ(イベントが起きた時間)で、各時間がどのイベントに属するかを自動で振り分ける
         # This is the mapping from milliseconds to event index:
         # It is defined such that
         # (1) t[ms_to_idx[ms]] >= ms*1000
@@ -54,6 +57,7 @@ class EventSlicer:
         return self.t_final
 
     def get_events(self, t_start_us: int, t_end_us: int) -> Dict[str, np.ndarray]:
+        #矢印は返り値の型を指定している
         """Get events (p, x, y, t) within the specified time window
         Parameters
         ----------
@@ -64,6 +68,7 @@ class EventSlicer:
         events: dictionary of (p, x, y, t) or None if the time window cannot be retrieved
         """
         assert t_start_us < t_end_us
+        #assertの右側がTrueじゃないとエラーが出る
 
         # We assume that the times are top-off-day, hence subtract offset:
         t_start_us -= self.t_offset
