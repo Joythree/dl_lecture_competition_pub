@@ -182,6 +182,7 @@ class EventSlicer:
 class Sequence(Dataset):
     def __init__(self, seq_path: Path, representation_type: RepresentationType, mode: str = 'test', delta_t_ms: int = 100,
                  num_bins: int = 4, transforms=[], name_idx=0, visualize=False, load_gt=False):
+        #引数の中で=を使うとキーワード引数になり、呼び出された時に引数を渡さないとその値になる
         assert num_bins >= 1
         assert delta_t_ms == 100
         assert seq_path.is_dir()
