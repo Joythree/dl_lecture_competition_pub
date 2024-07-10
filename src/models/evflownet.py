@@ -62,7 +62,8 @@ class EVFlowNet(nn.Module):
         inputs, flow = self.decoder4(inputs)
         flow_dict['flow3'] = flow.clone()
 
-        return flow
+        #重要な変更
+        return flow_dict
         
 
 # if __name__ == "__main__":
