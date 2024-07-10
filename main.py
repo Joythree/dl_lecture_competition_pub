@@ -128,7 +128,7 @@ def main(args: DictConfig):
             batch: Dict[str, Any]
             event_image = batch["event_volume"].to(device) # [B, 4, 480, 640]
             ground_truth_flow = batch["flow_gt"].to(device) # [B, 2, 480, 640]
-            flow = model(event_image) # [B, 2, 480, 640]
+            flow_dict = model(event_image) # [B, 2, 480, 640]
             #重要な変更
             loss = torch.tensor(0.0, device=device)
             for key, flow in flow_dict.items():
