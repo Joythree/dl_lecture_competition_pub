@@ -13,7 +13,8 @@ from pathlib import Path
 from typing import Dict, Any
 import os
 import time
-
+#加えたライブラリ
+import torch.nn.functional as F
 
 class RepresentationType(Enum):
     VOXEL = auto()
@@ -130,9 +131,11 @@ def main(args: DictConfig):
             flow = model(event_image) # [B, 2, 480, 640]
             #重要な変更
             loss = torch.tensor(0.0, device=device)
-            for j in range(4):
-                flow_j = flow[j]
-                loss += compute_epe_error(flow_j, ground_truth_flow)
+            for key, flow in flow_dict.items():
+                # flow のサイズを ground_truth_flow に合わせる
+                if flow.size() != ground_truth_flow.size():
+                    flow = F.interpolate(flow, size=ground_truth_flow.shape[2:], mode='bilinear', align_corners=False)
+                loss += compute_epe_error(flow, ground_truth_flow)
             print(f"batch {i} loss: {loss.item()}")
             optimizer.zero_grad()
             loss.backward()
@@ -161,7 +164,8 @@ def main(args: DictConfig):
         for batch in tqdm(test_data):
             batch: Dict[str, Any]
             event_image = batch["event_volume"].to(device)
-            batch_flow = model(event_image) # [1, 2, 480, 640]
+            batch_flow_dict = model(event_image) # [1, 2, 480, 640]
+            batch_flow = batch_flow_dict['flow3']
             flow = torch.cat((flow, batch_flow), dim=0)  # [N, 2, 480, 640]
         print("test done")
     # ------------------
