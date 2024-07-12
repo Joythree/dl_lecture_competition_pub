@@ -120,6 +120,17 @@ def main(args: DictConfig):
     # ------------------
     #   Start training
     # ------------------
+
+    def compute_loss(flow_dict, ground_truth_flow, weights):
+        total_loss = 0
+        for i, (key, flow) in enumerate(flow_dict.items()):
+            resized_flow = F.interpolate(flow, size=ground_truth_flow.shape[2:], mode='bilinear', align_corners=False)
+            loss = compute_epe_error(resized_flow, ground_truth_flow)
+            total_loss += weights[i] * loss
+        return total_loss
+
+    weights = [1.0, 0.5, 0.25, 0.125]  # 重みの例
+    
     model.train()
     for epoch in range(args.train.epochs):
         total_loss = 0
@@ -130,12 +141,7 @@ def main(args: DictConfig):
             ground_truth_flow = batch["flow_gt"].to(device) # [B, 2, 480, 640]
             flow_dict = model(event_image) # [B, 2, 480, 640]
             #重要な変更
-            loss = torch.tensor(0.0, device=device)
-            for key, flow in flow_dict.items():
-                # flow のサイズを ground_truth_flow に合わせる
-                if flow.size() != ground_truth_flow.size():
-                    flow = F.interpolate(flow, size=ground_truth_flow.shape[2:], mode='bilinear', align_corners=False)
-                loss += compute_epe_error(flow, ground_truth_flow)
+            loss = compute_loss(flow_dict, ground_truth_flow, weights)
             print(f"batch {i} loss: {loss.item()}")
             optimizer.zero_grad()
             loss.backward()
