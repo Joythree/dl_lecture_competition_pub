@@ -122,10 +122,10 @@ def main(args: DictConfig):
     # ------------------
 
     def compute_loss(flow_dict, ground_truth_flow, weights):
-        total_loss = 0
+        total_loss: torch.Tensor = torch.zeros(1).to(device)
         for i, (key, flow) in enumerate(flow_dict.items()):
             resized_flow = F.interpolate(flow, size=ground_truth_flow.shape[2:], mode='bilinear', align_corners=False)
-            loss = compute_epe_error(resized_flow, ground_truth_flow)
+            loss: torch.Tensor = compute_epe_error(resized_flow, ground_truth_flow)
             total_loss += weights[i] * loss
         return total_loss
 
