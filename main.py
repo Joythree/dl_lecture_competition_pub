@@ -141,7 +141,7 @@ def main(args: DictConfig):
             ground_truth_flow = batch["flow_gt"].to(device) # [B, 2, 480, 640]
             flow_dict = model(event_image) # [B, 2, 480, 640]
             #重要な変更
-            loss = compute_loss(flow_dict, ground_truth_flow, weights)
+            loss: torch.Tensor = compute_loss(flow_dict, ground_truth_flow, weights)
             print(f"batch {i} loss: {loss.item()}")
             optimizer.zero_grad()
             loss.backward()
